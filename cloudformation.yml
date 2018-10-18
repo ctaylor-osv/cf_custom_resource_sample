@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  CustomResourceLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: handler.index
+      Role: !GetAtt CustomResourceLambdaExecutionRole.Arn
+      Code: function/
+      Runtime: nodejs8.10
+  CustomResourceLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Policies:
+      - PolicyName: allow-logs
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - 'logs:*'
+            Resource: arn:aws:logs:*:*:*
+  Custom:
+    Type: Custom::CustomResource
+    Properties:
+      ServiceToken: !GetAtt CustomResourceLambdaFunction.Arn
+      Param1: val1
+      Param2: val2
+Outputs:
+  File:
+    Value: !GetAtt Custom.Out
